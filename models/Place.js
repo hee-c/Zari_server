@@ -6,6 +6,11 @@ const placeSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
+  type: {
+    type: String,
+    trim: true,
+    enum: ['public', 'private'],
+  },
   map: {
     type: String,
     trim: true,

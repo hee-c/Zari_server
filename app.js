@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const http = require('http');
 const statuses = require('statuses');
+const logger = require("morgan");
 
 const { authHeader } = require('./constants');
 require('./loader/database');
@@ -15,6 +16,7 @@ const port = process.env.PORT || '5000';
 const app = express();
 const server = http.createServer(app);
 
+app.use(logger("dev"));
 app.use(cors({ exposedHeaders: authHeader }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

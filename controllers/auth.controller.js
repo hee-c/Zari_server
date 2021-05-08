@@ -7,7 +7,6 @@ const { accessTokenExpired } = require('../constants');
 
 exports.login = async function (req, res, next) {
   try {
-    console.log(req.body)
     const { email, name, picture } = await admin.auth().verifyIdToken(req.body.id_token);
     const currentUser = await User.findOne({ email });
 
@@ -21,7 +20,7 @@ exports.login = async function (req, res, next) {
             process.env.JWT_SECRET,
             { expiresIn: accessTokenExpired }
           ),
-          ...currentUser,
+          user: currentUser,
         },
       });
     } else {
@@ -40,7 +39,7 @@ exports.login = async function (req, res, next) {
             process.env.JWT_SECRET,
             { expiresIn: accessTokenExpired }
           ),
-          ...newUser,
+          user: newUser,
         },
       });
     }

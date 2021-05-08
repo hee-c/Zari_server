@@ -15,7 +15,7 @@ exports.getUserData = async function (req, res, next) {
       code: 200,
       message: 'login success',
       data: {
-        currentUser,
+        user: currentUser,
       },
     });
   } catch (err) {

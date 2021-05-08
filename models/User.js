@@ -19,9 +19,9 @@ const userSchema = new mongoose.Schema({
   character: {
     type: Object,
   },
-  privatePlaces: [{
+  privateRooms: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Place',
+    ref: 'Room',
   }]
 });
 

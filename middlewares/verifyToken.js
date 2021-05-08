@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
 
-exports.verifyUser = async function (req, res, next) {
+exports.verifyToken = async function (req, res, next) {
   try {
     await jwt.verify(req.headers.authorization, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {

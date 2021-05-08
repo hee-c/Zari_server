@@ -1,6 +1,7 @@
 const admin = require('firebase-admin');
 const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
+
 const User = require('../models/User');
 const { accessTokenExpired } = require('../constants');
 
@@ -20,9 +21,7 @@ exports.login = async function (req, res, next) {
             process.env.JWT_SECRET,
             { expiresIn: accessTokenExpired }
           ),
-          email,
-          name,
-          picture,
+          ...currentUser,
         },
       });
     } else {
@@ -41,9 +40,7 @@ exports.login = async function (req, res, next) {
             process.env.JWT_SECRET,
             { expiresIn: accessTokenExpired }
           ),
-          email,
-          name,
-          picture,
+          ...newUser,
         },
       });
     }

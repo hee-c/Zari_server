@@ -9,12 +9,15 @@ const statuses = require('statuses');
 const logger = require("morgan");
 
 const { authHeader } = require('./constants');
+const webSocket = require('./loader/socketio');
 require('./loader/database');
 require('./loader/firebaseAdmin');
 
 const port = process.env.PORT || '5000';
 const app = express();
 const server = http.createServer(app);
+
+webSocket(server);
 
 app.use(logger("dev"));
 app.use(cors({ exposedHeaders: authHeader }));

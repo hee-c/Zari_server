@@ -1,13 +1,15 @@
 const users = [];
 
-function userJoin(socketId, name, email, roomId, coordinates) {
+function userJoin(socketId, name, email, roomId, coordinates, character) {
   const user = {
     socketId,
     name,
     email,
     roomId,
     coordinates,
+    character,
   };
+
   users.push(user);
 
   return user;

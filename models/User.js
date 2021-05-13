@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
     trim: true,
   },
   character: {
-    type: Object,
+    type: String,
+    trim: true,
   },
   privateRooms: [{
     type: mongoose.Schema.Types.ObjectId,

@@ -43,10 +43,12 @@ module.exports = server => {
       console.log('join videoChat')
       if (users[roomID]) {
         const length = users[roomID].length;
+
         if (length === 4) {
           socket.emit('room full');
           return;
         }
+
         users[roomID].push(socket.id);
       } else {
         users[roomID] = [socket.id];
@@ -56,8 +58,11 @@ module.exports = server => {
 
       console.log(users)
       console.log(socketToRoom)
+      console.log(usersInThisRoom)
 
       socket.emit('all users', usersInThisRoom);
+
+      console.log('emit all users')
     });
 
     socket.on('sending signal', payload => {
@@ -70,7 +75,8 @@ module.exports = server => {
       io.to(payload.callerID).emit('receiving returned signal', { signal: payload.signal, id: socket.id });
     });
 
-    socket.on('disconnect', () => {
+    socket.on('leave videoChat', () => {
+      console.log('leave videoChat')
       const roomID = socketToRoom[socket.id];
 
       if (users[roomID]) {
@@ -79,8 +85,25 @@ module.exports = server => {
 
       delete socketToRoom[socket.id];
 
-      const leftUser = userLeave(socket.id);
+      console.log(users)
+      console.log(socketToRoom)
+
+      socket.broadcast.emit('user left', socket.id);
+    });
+
+    socket.on('disconnect', () => {
       console.log(socket.id + ' disconnected')
+      const roomID = socketToRoom[socket.id];
+
+      if (users[roomID]) {
+        users[roomID] = users[roomID].filter(id => id !== socket.id);
+      }
+
+      delete socketToRoom[socket.id];
+
+      socket.broadcast.emit('user left', socket.id);
+
+      const leftUser = userLeave(socket.id);
 
       io.to(targetRoomId)
         .emit('updateUsers', getRoomUsers(targetRoomId));

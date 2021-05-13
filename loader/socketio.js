@@ -19,7 +19,6 @@ module.exports = server => {
 
   io.on('connection', socket => {
     let targetRoomId;
-    console.log(socket.id + ' connected')
 
     socket.on('joinRoom', ({ name, email, roomId, coordinates, character }) => {
       targetRoomId = roomId;
@@ -40,7 +39,6 @@ module.exports = server => {
     });
 
     socket.on('join videoChat', roomID => {
-      console.log('join videoChat')
       if (users[roomID]) {
         const length = users[roomID].length;
 
@@ -53,30 +51,22 @@ module.exports = server => {
       } else {
         users[roomID] = [socket.id];
       }
+
       socketToRoom[socket.id] = roomID;
       const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
 
-      console.log(users)
-      console.log(socketToRoom)
-      console.log(usersInThisRoom)
-
       socket.emit('all users', usersInThisRoom);
-
-      console.log('emit all users')
     });
 
     socket.on('sending signal', payload => {
-      console.log('sending signal')
       io.to(payload.userToSignal).emit('user joined', { signal: payload.signal, callerID: payload.callerID });
     });
 
     socket.on('returning signal', payload => {
-      console.log('returning signal')
       io.to(payload.callerID).emit('receiving returned signal', { signal: payload.signal, id: socket.id });
     });
 
     socket.on('leave videoChat', () => {
-      console.log('leave videoChat')
       const roomID = socketToRoom[socket.id];
 
       if (users[roomID]) {
@@ -85,14 +75,10 @@ module.exports = server => {
 
       delete socketToRoom[socket.id];
 
-      console.log(users)
-      console.log(socketToRoom)
-
       socket.broadcast.emit('user left', socket.id);
     });
 
     socket.on('disconnect', () => {
-      console.log(socket.id + ' disconnected')
       const roomID = socketToRoom[socket.id];
 
       if (users[roomID]) {

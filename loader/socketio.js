@@ -5,6 +5,7 @@ const {
   getRoomUsers,
   changeCoordinates,
   getRoomUsersWithoutMe,
+  isJoinedUser,
 } = require('./accessUsers');
 
 module.exports = server => {
@@ -78,22 +79,24 @@ module.exports = server => {
     });
 
     socket.on('disconnect', () => {
-      const roomID = socketToRoom[socket.id];
+      if (isJoinedUser(socket.id)) {
+        const roomID = socketToRoom[socket.id];
 
-      if (users[roomID]) {
-        users[roomID] = users[roomID].filter(id => id !== socket.id);
+        if (users[roomID]) {
+          users[roomID] = users[roomID].filter(id => id !== socket.id);
+        }
+
+        delete socketToRoom[socket.id];
+
+        socket.broadcast.emit('user left', socket.id);
+
+        const leftUser = userLeave(socket.id);
+
+        socket.to(leftUser.roomId)
+          .emit('userLeave', leftUser);
+
+        socket.leave(leftUser.roomId);
       }
-
-      delete socketToRoom[socket.id];
-
-      socket.broadcast.emit('user left', socket.id);
-
-      const leftUser = userLeave(socket.id);
-
-      socket.to(leftUser.roomId)
-        .emit('userLeave', leftUser);
-
-      socket.leave(leftUser.roomId);
     });
   });
 };

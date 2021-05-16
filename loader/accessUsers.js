@@ -38,10 +38,21 @@ function getRoomUsersWithoutMe(roomId, email) {
   return users.filter(user => user.roomId === roomId && user.email !== email);
 }
 
+function isJoinedUser(socketId) {
+  const index = users.findIndex(user => user.socketId === socketId);
+
+  if (index !== -1) {
+    return true;
+  }
+
+  return false;
+}
+
 module.exports = {
   userJoin,
   userLeave,
   getRoomUsers,
   changeCoordinates,
   getRoomUsersWithoutMe,
+  isJoinedUser,
 };

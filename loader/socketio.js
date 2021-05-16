@@ -4,6 +4,7 @@ const {
   userLeave,
   getRoomUsers,
   changeCoordinates,
+  getRoomUsersWithoutMe,
 } = require('./accessUsers');
 
 module.exports = server => {
@@ -18,24 +19,22 @@ module.exports = server => {
   const socketToRoom = {};
 
   io.on('connection', socket => {
-    let targetRoomId;
-
-    socket.on('joinRoom', ({ name, email, roomId, coordinates, character }) => {
-      targetRoomId = roomId;
-
-      userJoin(socket.id, name, email, roomId, coordinates, character);
+    socket.on('joinRoom', ({ name, email, roomId, coordinates, characterType }) => {
+      const newUser = userJoin(socket.id, name, email, roomId, coordinates, characterType);
 
       socket.join(roomId);
 
-      io.to(roomId)
-        .emit('updateUsers', getRoomUsers(roomId));
+      socket.emit('receiveOnlineUsers', getRoomUsersWithoutMe(roomId, email));
+
+      socket.to(roomId)
+        .emit('newUserJoin', newUser);
     });
 
     socket.on('changeCoordinates', coordinates => {
-      changeCoordinates(socket.id, coordinates);
+      const changedUser = changeCoordinates(socket.id, coordinates);
 
-      io.to(targetRoomId)
-        .emit('updateUsers', getRoomUsers(targetRoomId));
+      socket.to(changedUser.roomId)
+        .emit('updateUserCoordinates', changedUser);
     });
 
     socket.on('join videoChat', roomID => {
@@ -91,12 +90,10 @@ module.exports = server => {
 
       const leftUser = userLeave(socket.id);
 
-      io.to(targetRoomId)
-        .emit('updateUsers', getRoomUsers(targetRoomId));
-      io.to(targetRoomId)
+      socket.to(leftUser.roomId)
         .emit('userLeave', leftUser);
 
-      socket.leave(targetRoomId);
+      socket.leave(leftUser.roomId);
     });
   });
 };

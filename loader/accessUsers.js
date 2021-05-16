@@ -1,13 +1,13 @@
 const users = [];
 
-function userJoin(socketId, name, email, roomId, coordinates, character) {
+function userJoin(socketId, name, email, roomId, coordinates, characterType) {
   const user = {
     socketId,
     name,
     email,
     roomId,
     coordinates,
-    character,
+    characterType,
   };
 
   users.push(user);
@@ -34,9 +34,14 @@ function getRoomUsers(roomId) {
   return users.filter(user => user.roomId === roomId);
 }
 
+function getRoomUsersWithoutMe(roomId, email) {
+  return users.filter(user => user.roomId === roomId && user.email !== email);
+}
+
 module.exports = {
   userJoin,
   userLeave,
   getRoomUsers,
   changeCoordinates,
+  getRoomUsersWithoutMe,
 };

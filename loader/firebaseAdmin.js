@@ -17,7 +17,7 @@ const serviceAccount = {
   type: firebaseType,
   project_id: fireebaseProjectId,
   private_key_id: firebasePrivateKeyId,
-  private_key: firebasePrivateKey,
+  private_key: firebasePrivateKey.replace(/\\n/gm, '\n'),
   client_email: firebaseClientEmail,
   client_id: firebaseClientId,
   auth_uri: firebaseAuthUrl,
@@ -30,7 +30,14 @@ const test = require('../constants/test');
 
 const test2 = JSON.parse(JSON.stringify(test))
 console.log('hereeeeeeeeeeeeeeeeeee')
+console.log('test')
+console.log(test)
+console.log(test.private_key)
+console.log(test.private_key.replace(/\\n/gm, '\n'))
+console.log('test2')
 console.log(test2)
+console.log('serviceAccount')
+console.log(serviceAccount)
 admin.initializeApp({
   credential: admin.credential.cert(test2)
 });

@@ -26,10 +26,13 @@ const serviceAccount = {
   client_x509_cert_url: firebaseClientX509CertUrl,
 };
 
-console.log(firebasePrivateKey)
+const test = require('../constants/test');
 
+const test2 = JSON.parse(JSON.stringify(test))
+console.log('hereeeeeeeeeeeeeeeeeee')
+console.log(test2)
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(test2)
 });
 
 // admin.initializeApp({

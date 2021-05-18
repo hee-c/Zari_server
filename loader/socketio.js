@@ -11,7 +11,7 @@ const {
 module.exports = server => {
   const io = socketio(server, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: '*',
       methods: ['GET', 'POST']
     }
   });

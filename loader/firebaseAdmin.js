@@ -26,6 +26,8 @@ const serviceAccount = {
   client_x509_cert_url: firebaseClientX509CertUrl,
 };
 
+console.log(firebasePrivateKey)
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });

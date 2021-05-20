@@ -18,6 +18,7 @@ module.exports = server => {
 
   const users = {};
   const socketToRoom = {};
+  const videoChatSpaces = {};
 
   io.on('connection', socket => {
     socket.on('joinRoom', ({ name, email, roomId, coordinates, characterType }) => {
@@ -36,6 +37,15 @@ module.exports = server => {
 
       socket.to(changedUser.roomId)
         .emit('updateUserCoordinates', changedUser);
+    });
+
+    socket.on('userLeaveRoom', () => {
+      const leftUser = userLeave(socket.id);
+
+      socket.to(leftUser.roomId)
+        .emit('userLeave', leftUser);
+
+      socket.leave(leftUser.roomId);
     });
 
     socket.on('join videoChat', roomID => {

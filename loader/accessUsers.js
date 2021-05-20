@@ -48,6 +48,10 @@ function isJoinedUser(socketId) {
   return false;
 }
 
+function findUserById(socketId) {
+  return users.find(user => user.socketId === socketId);
+}
+
 module.exports = {
   userJoin,
   userLeave,
@@ -55,4 +59,5 @@ module.exports = {
   changeCoordinates,
   getRoomUsersWithoutMe,
   isJoinedUser,
+  findUserById,
 };

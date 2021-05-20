@@ -6,6 +6,7 @@ const {
   changeCoordinates,
   getRoomUsersWithoutMe,
   isJoinedUser,
+  findUserById,
 } = require('./accessUsers');
 
 module.exports = server => {
@@ -26,7 +27,7 @@ module.exports = server => {
 
       socket.join(roomId);
 
-      socket.emit('receiveOnlineUsers', getRoomUsersWithoutMe(roomId, email));
+      socket.emit('receiveOnlineUsers', getRoomUsersWithoutMe(roomId, email), videoChatSpaces[roomId]);
 
       socket.to(roomId)
         .emit('newUserJoin', newUser);
@@ -46,6 +47,19 @@ module.exports = server => {
         .emit('userLeave', leftUser);
 
       socket.leave(leftUser.roomId);
+    });
+
+    socket.on('setVideoChatSpace', (space) => {
+      const user = findUserById(socket.id);
+
+      if (videoChatSpaces[user.roomId]) {
+        videoChatSpaces[user.roomId].push(space);
+      } else {
+        videoChatSpaces[user.roomId] = [space];
+      }
+
+      socket.to(user.roomId)
+        .emit('newVideoChatSpace', space);
     });
 
     socket.on('join videoChat', roomID => {

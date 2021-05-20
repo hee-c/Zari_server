@@ -43,10 +43,12 @@ module.exports = server => {
     socket.on('userLeaveRoom', () => {
       const leftUser = userLeave(socket.id);
 
-      socket.to(leftUser.roomId)
-        .emit('userLeave', leftUser);
+      if (leftUser) {
+        socket.to(leftUser.roomId)
+          .emit('userLeave', leftUser);
 
-      socket.leave(leftUser.roomId);
+        socket.leave(leftUser.roomId);
+      }
     });
 
     socket.on('setVideoChatSpace', (space) => {

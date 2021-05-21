@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
+  nickname: {
+    type: String,
+    trim: true,
+  },
   picture: {
     type: String,
     trim: true,

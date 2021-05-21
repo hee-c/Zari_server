@@ -27,7 +27,7 @@ exports.setUserCharacter = async function(req, res, next) {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.userId,
-      { character: req.body.selectedCharacter },
+      { character: req.body.selectedCharacter, nickname: req.body.nickname },
       { new: true },
     );
 
@@ -36,6 +36,7 @@ exports.setUserCharacter = async function(req, res, next) {
       message: 'character update success',
       data: {
         character: updatedUser.character,
+        nickname: updatedUser.nickname,
       }
     });
   } catch (err) {

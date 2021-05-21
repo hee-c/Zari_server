@@ -22,8 +22,8 @@ module.exports = server => {
   const videoChatSpaces = {};
 
   io.on('connection', socket => {
-    socket.on('joinRoom', ({ name, email, roomId, coordinates, characterType }) => {
-      const newUser = userJoin(socket.id, name, email, roomId, coordinates, characterType);
+    socket.on('joinRoom', ({ name, nickname, email, roomId, coordinates, characterType }) => {
+      const newUser = userJoin(socket.id, name, nickname, email, roomId, coordinates, characterType);
 
       socket.join(roomId);
 
@@ -49,6 +49,13 @@ module.exports = server => {
 
         socket.leave(leftUser.roomId);
       }
+    });
+
+    socket.on('sendMessage', data => {
+      const user = findUserById(socket.id);
+
+      io.to(user.roomId)
+        .emit('receiveMessage', data);
     });
 
     socket.on('setVideoChatSpace', (space) => {

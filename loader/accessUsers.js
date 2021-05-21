@@ -1,9 +1,10 @@
 const users = [];
 
-function userJoin(socketId, name, email, roomId, coordinates, characterType) {
+function userJoin(socketId, name, nickname, email, roomId, coordinates, characterType) {
   const user = {
     socketId,
     name,
+    nickname,
     email,
     roomId,
     coordinates,

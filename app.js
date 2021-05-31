@@ -8,7 +8,6 @@ const http = require('http');
 const statuses = require('statuses');
 const logger = require("morgan");
 
-const { authHeader } = require('./constants');
 const webSocket = require('./loader/socketio');
 require('./loader/database');
 require('./loader/firebaseAdmin');
@@ -32,7 +31,6 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  console.log(err)
   res.status(err.status || 500);
   res.json({
     code: res.status,

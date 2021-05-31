@@ -1,13 +1,13 @@
 const socketio = require('socket.io');
 const {
-  userJoin,
-  userLeave,
-  getRoomUsers,
-  changeCoordinates,
-  getRoomUsersWithoutMe,
-  isJoinedUser,
-  findUserById,
-} = require('./accessUsers');
+  playerJoin,
+  playerLeave,
+  getRoomPlayers,
+  changePlayerCoordinates,
+  getRoomPlayersWithoutMe,
+  isJoinedPlayer,
+  findPlayerById,
+} = require('./accessPlayers');
 
 module.exports = server => {
   const io = socketio(server, {
@@ -17,118 +17,111 @@ module.exports = server => {
     }
   });
 
-  const users = {};
-  const socketToRoom = {};
+  const videoChatParticipants = {};
+  const socketToVideoChatSpace = {};
   const videoChatSpaces = {};
 
   io.on('connection', socket => {
     socket.on('joinRoom', ({ name, nickname, email, roomId, coordinates, characterType }) => {
-      const newUser = userJoin(socket.id, name, nickname, email, roomId, coordinates, characterType);
+      const newPlayer = playerJoin(socket.id, name, nickname, email, roomId, coordinates, characterType);
 
       socket.join(roomId);
 
-      socket.emit('receiveOnlineUsers', getRoomUsersWithoutMe(roomId, email), videoChatSpaces[roomId]);
+      socket.emit('receiveOnlinePlayers', getRoomPlayersWithoutMe(roomId, email), videoChatSpaces[roomId]);
 
       socket.to(roomId)
-        .emit('newUserJoin', newUser);
+        .emit('newPlayerJoin', newPlayer);
     });
 
-    socket.on('changeCoordinates', coordinates => {
-      const changedUser = changeCoordinates(socket.id, coordinates);
+    socket.on('changePlayerCoordinates', coordinates => {
+      const changedPlayer = changePlayerCoordinates(socket.id, coordinates);
 
-      socket.to(changedUser.roomId)
-        .emit('updateUserCoordinates', changedUser);
+      socket.to(changedPlayer.roomId)
+        .emit('updatePlayerCoordinates', changedPlayer);
     });
 
-    socket.on('userLeaveRoom', () => {
-      const leftUser = userLeave(socket.id);
+    socket.on('leaveRoom', () => {
+      const leftPlayer = playerLeave(socket.id);
 
-      if (leftUser) {
-        socket.to(leftUser.roomId)
-          .emit('userLeave', leftUser);
+      if (leftPlayer) {
+        socket.to(leftPlayer.roomId)
+          .emit('playerLeaveRoom', leftPlayer);
 
-        socket.leave(leftUser.roomId);
+        socket.leave(leftPlayer.roomId);
       }
     });
 
-    socket.on('sendMessage', data => {
-      const user = findUserById(socket.id);
+    socket.on('sendChattingMessage', data => {
+      const player = findPlayerById(socket.id);
 
-      io.to(user.roomId)
-        .emit('receiveMessage', data);
+      io.to(player.roomId)
+        .emit('receiveChattingMessage', data);
     });
 
-    socket.on('setVideoChatSpace', (space) => {
-      const user = findUserById(socket.id);
+    socket.on('createVideoChatSpace', (space) => {
+      const player = findPlayerById(socket.id);
 
-      if (videoChatSpaces[user.roomId]) {
-        videoChatSpaces[user.roomId].push(space);
+      if (videoChatSpaces[player.roomId]) {
+        videoChatSpaces[player.roomId].push(space);
       } else {
-        videoChatSpaces[user.roomId] = [space];
+        videoChatSpaces[player.roomId] = [space];
       }
 
-      socket.to(user.roomId)
-        .emit('newVideoChatSpace', space);
+      socket.to(player.roomId)
+        .emit('videoChatSpaceCreated', space);
     });
 
-    socket.on('join videoChat', roomID => {
-      if (users[roomID]) {
-        const length = users[roomID].length;
-
-        if (length === 4) {
-          socket.emit('room full');
-          return;
-        }
-
-        users[roomID].push(socket.id);
+    socket.on('joinVideoChat', roomID => {
+      if (videoChatParticipants[roomID]) {
+        videoChatParticipants[roomID].push(socket.id);
       } else {
-        users[roomID] = [socket.id];
+        videoChatParticipants[roomID] = [socket.id];
       }
 
-      socketToRoom[socket.id] = roomID;
-      const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
+      socketToVideoChatSpace[socket.id] = roomID;
+      const participants = videoChatParticipants[roomID].filter(id => id !== socket.id);
 
-      socket.emit('all users', usersInThisRoom);
+      socket.emit('currentVideoChatParticipants', participants);
     });
 
-    socket.on('sending signal', payload => {
-      io.to(payload.userToSignal).emit('user joined', { signal: payload.signal, callerID: payload.callerID });
+    socket.on('sendingSignalToConnectWebRTC', payload => {
+      io.to(payload.userToSignal).emit('newVideoChatParticipant', { signal: payload.signal, callerID: payload.callerID });
     });
 
-    socket.on('returning signal', payload => {
-      io.to(payload.callerID).emit('receiving returned signal', { signal: payload.signal, id: socket.id });
+    socket.on('returningSignalToConnectWebRTC', payload => {
+      io.to(payload.callerID).emit('receivingReturnedSignalToConnectWebRTC', { signal: payload.signal, id: socket.id });
     });
 
-    socket.on('leave videoChat', () => {
-      const roomID = socketToRoom[socket.id];
+    socket.on('leaveVideoChat', () => {
+      const roomID = socketToVideoChatSpace[socket.id];
 
-      if (users[roomID]) {
-        users[roomID] = users[roomID].filter(id => id !== socket.id);
+      if (videoChatParticipants[roomID]) {
+        videoChatParticipants[roomID] = videoChatParticipants[roomID].filter(id => id !== socket.id);
       }
 
-      delete socketToRoom[socket.id];
+      delete socketToVideoChatSpace[socket.id];
 
-      socket.broadcast.emit('user left', socket.id);
+      socket.broadcast.emit('participantLeft', socket.id);
     });
 
     socket.on('disconnect', () => {
-      if (isJoinedUser(socket.id)) {
-        const roomID = socketToRoom[socket.id];
+      if (isJoinedPlayer(socket.id)) {
+        const roomID = socketToVideoChatSpace[socket.id];
 
-        if (users[roomID]) {
-          users[roomID] = users[roomID].filter(id => id !== socket.id);
+        if (videoChatParticipants[roomID]) {
+          videoChatParticipants[roomID] = videoChatParticipants[roomID].filter(id => id !== socket.id);
         }
 
-        delete socketToRoom[socket.id];
+        delete socketToVideoChatSpace[socket.id];
 
-        socket.broadcast.emit('user left', socket.id);
+        socket.broadcast.emit('participantLeft', socket.id);
 
-        const leftUser = userLeave(socket.id);
+        const leftPlayer = playerLeave(socket.id);
 
-        socket.to(leftUser.roomId)
-          .emit('userLeave', leftUser);
+        socket.to(leftPlayer.roomId)
+          .emit('playerLeaveRoom', leftPlayer);
 
-        socket.leave(leftUser.roomId);
+        socket.leave(leftPlayer.roomId);
       }
     });
   });
